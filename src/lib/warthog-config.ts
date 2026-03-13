@@ -69,7 +69,17 @@ export const WarthogService = {
   async sendTransaction(mnemonic: string, toAddress: string, amountWart: number) {
     try {
       const account = await this.getAccount(mnemonic);
-      const myAddress = account.getAddress().hex;
+      
+      // --- RREGULLIMI PËR TYPESCRIPT ---
+      const acc = account as any;
+      let myAddress = "";
+      
+      if (typeof acc.getAddress === 'function') {
+        const addrObj = acc.getAddress();
+        myAddress = typeof addrObj === 'string' ? addrObj : (addrObj.hex || addrObj.address || "");
+      } else {
+        myAddress = acc.address?.hex || acc.address || "";
+      }
       
       // 1. Marrim të dhënat e nevojshme sipas dokumentacionit
       const [accData, chainData] = await Promise.all([
@@ -83,8 +93,8 @@ export const WarthogService = {
       const nonce = accData.nonce;
       const chainPin = chainData.pin;
 
-      // 3. Ndërtimi i transaksionit (Libraria warthog-ts merret me nënshkrimin)
-      const tx = account.createTransaction(
+      // 3. Ndërtimi i transaksionit
+      const tx = acc.createTransaction(
         myAddress, 
         toAddress,
         amountUnits,
