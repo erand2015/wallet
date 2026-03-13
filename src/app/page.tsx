@@ -7,7 +7,6 @@ import { SeedWizard } from '@/components/onboarding/seed-wizard';
 import { MainDashboard } from '@/components/dashboard/main-view';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { ShieldCheck, Lock, ChevronRight } from "lucide-react";
 
 export default function App() {
@@ -15,13 +14,11 @@ export default function App() {
   const [balance, setBalance] = useState("0.0000");
   const [pin, setPin] = useState("");
 
-  // States për procesin e ri të setup-it
   const [setupStep, setSetupStep] = useState<"seed" | "path" | "pin">("seed");
   const [tempMnemonic, setTempMnemonic] = useState("");
   const [selectedHardened, setSelectedHardened] = useState(true);
   const [newPin, setNewPin] = useState("");
 
-  // Përditëso balancën automatikisht
   useEffect(() => {
     if (address && !isLocked) {
       WarthogService.getBalance(address).then(setBalance);
@@ -32,25 +29,27 @@ export default function App() {
     }
   }, [address, isLocked]);
 
-  // Kalimi nga SeedWizard te zgjedhja e Path-it
   const handleSeedComplete = (mnemonic: string) => {
     setTempMnemonic(mnemonic);
     setSetupStep("path");
   };
 
-  // Krijimi final i Wallet-it
   const handleFinalizeSetup = async () => {
     if (newPin.length < 4) return alert("PIN duhet të jetë 4 shifra");
     
     try {
       const account = await WarthogService.getAccount(tempMnemonic, selectedHardened);
       
+      // --- RREGULLIMI PËR TYPESCRIPT DHE NETLIFY ---
       let addressHex = "";
-      if (typeof account.getAddress === 'function') {
-        const addrObj = account.getAddress();
-        addressHex = typeof addrObj === 'string' ? addrObj : addrObj.hex;
+      const acc = account as any; // E kthejmë në 'any' për të shmangur gabimin e Build
+
+      if (typeof acc.getAddress === 'function') {
+        const addrObj = acc.getAddress();
+        addressHex = typeof addrObj === 'string' ? addrObj : (addrObj.hex || addrObj.address || "");
       } else {
-        addressHex = (account as any).address?.hex || (account as any).address;
+        // Fallback nëse struktura ndryshon
+        addressHex = acc.address?.hex || acc.address || "";
       }
 
       if (!addressHex) throw new Error("Adresa nuk u gjet");
@@ -58,7 +57,6 @@ export default function App() {
       const encryptedVault = await CryptoVault.seal(tempMnemonic, newPin);
       setVault(encryptedVault, addressHex);
       
-      // Reset setup states
       setSetupStep("seed");
       setTempMnemonic("");
       setNewPin("");
@@ -79,14 +77,11 @@ export default function App() {
     }
   };
 
-  // --- RRJEDHA E ONBOARDING ---
   if (!vault) {
-    // Hapi 1: Seed Phrase
     if (setupStep === "seed") {
       return <SeedWizard onComplete={handleSeedComplete} />;
     }
 
-    // Hapi 2: Zgjedhja e Path-it (Zëvendëson confirm)
     if (setupStep === "path") {
       return (
         <div className="max-w-md mx-auto pt-20 p-6 space-y-6 animate-in slide-in-from-bottom-4 duration-500">
@@ -123,7 +118,6 @@ export default function App() {
       );
     }
 
-    // Hapi 3: Krijimi i PIN-it (Zëvendëson prompt)
     if (setupStep === "pin") {
       return (
         <div className="max-w-md mx-auto pt-32 p-6 text-center space-y-8 animate-in zoom-in-95 duration-300">
@@ -140,9 +134,6 @@ export default function App() {
             onChange={(e) => {
               const val = e.target.value.replace(/\D/g, "");
               setNewPin(val);
-              if (val.length === 4) {
-                 // Mund ta bëjmë auto-finalize ose të presim butonin
-              }
             }} 
             className="text-center text-4xl h-20 rounded-3xl tracking-[0.5em] font-bold border-2 focus:border-blue-500" 
             placeholder="****"
@@ -161,7 +152,6 @@ export default function App() {
     }
   }
 
-  // --- LOGIN SCREEN ---
   if (isLocked) return (
     <div className="max-w-md mx-auto pt-40 p-6 text-center space-y-6">
       <div className="bg-blue-600 w-16 h-16 rounded-3xl mx-auto flex items-center justify-center text-white shadow-xl shadow-blue-500/30">
