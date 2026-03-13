@@ -1,16 +1,15 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  /* opsionet e tjera këtu */
-  // Hoqëm reactCompiler sepse shkaktonte gabimin në Build
-  eslint: {
-    // Kjo ndihmon që deploy të mos dështojë për gabime të vogla stili
-    ignoreDuringBuilds: true,
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  output: 'export', // Kjo ndihmon shumë për deploy në Netlify/Vercel
+  images: {
+    unoptimized: true, // Duhet nëse përdorim 'output: export'
   },
   typescript: {
-    // Kjo lejon build-in edhe nëse ka gabime të vogla tipash
     ignoreBuildErrors: true,
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  }
 };
 
 export default nextConfig;
