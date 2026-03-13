@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@noble/hashes": "^2.0.1",
+    "@radix-ui/react-slot": "^1.2.4",
+    "@tailwindcss/postcss": "^4.2.1",
     "bip32": "^5.0.1",
     "bip39": "^3.1.0",
     "buffer": "^6.0.3",
