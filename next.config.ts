@@ -1,9 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export', // Kjo ndihmon shumë për deploy në Netlify/Vercel
+  output: 'export', 
   images: {
-    unoptimized: true, // Duhet nëse përdorim 'output: export'
+    unoptimized: true, 
   },
+  trailingSlash: true, // Kjo krijon folder/index.html që Netlify e gjen më lehtë
   typescript: {
     ignoreBuildErrors: true,
   },
